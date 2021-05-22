@@ -1,0 +1,254 @@
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+# bloc de cod R in Rmd
+# install.packages(c("reshape2","lubridate","weathermetrics","dplyr")
+```
+
+### Obtinerea datelor:
+
+* Step 1: https://www.ncdc.noaa.gov/cdo-web/datasets -> Daily Summaries -> FTP
+* Step 2: check ghcnd-stations.txt, search Cluj-Napoca, gasit ca ID-ul statiei meteo e ROE00100902
+* Step 3: cautat ROE00100902.tar.gz in https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ si downloadat
+* Step 4: expandat tgz-ul si rezulta datasetul ROE00100902.csv atasat
+
+### Construirea dataset-ului:
+
+* Step 5: ne uitam in https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt ce avem in fisier si ce inseamna coloanele. De fapt am ajuns la alt link, in care era mai clar: https://docs.opendata.aws/noaa-ghcn-pds/readme.html
+* Step 6: ne uitam si in fisier sa vedem cum arata..
+* Step 7: scriem niste cod sa citim csv-ul
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+
+input <- read.csv("ROE00100902.csv", stringsAsFactors=F, header=F)
+colnames(input) <- c("Statie", "Zi", "Variabila", "Valoare", "M", "Q", "S", "Timp")
+
+tail(input)
+
+```
+
+
+### Curatarea datelor:
+
+* Step 8: Avem o linie pentru o inregistrare. Facem un dcast care transforma din multe linii cu variabile diferite intr-un data frame cu mai multe coloane, una pentru fiecare variabila
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(reshape2)
+
+df <- dcast(input, Zi ~ Variabila, value.var="Valoare")
+tail(df)
+
+```
+
+* Step 9: Convertim ziua sa fie de tip data si pastram coloanele cu precipitatia si temperatura medie si doar zilele in care exista amandoua
+* Step 10: Pastram doar datele incepand din 1980
+* Step 11: Convertim temperaturile in Celsius (in dataset sunt zecimi de grade celsius)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(reshape2)
+library(lubridate)
+library(weathermetrics)
+
+data <- df[, c("Zi", "PRCP", "TAVG")]
+
+data$Zi <- ymd(data$Zi)
+data <- data[complete.cases(data),]
+data <- data[data$Zi >= '1980-01-01',]
+data$TAVG <- data$TAVG / 10
+
+colnames(data) <- c("Data", "PrecMM", "TMedieC")
+
+tail(data)
+
+```
+
+### Analiza Exploratorie
+
+* Step 11: Vizualizam temperatura medie si precipitatiile
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+ggplot(data, aes(x=Data, y=TMedieC)) + 
+  geom_point(col="tomato1", alpha=.5) + 
+  xlab("Data") +
+  ylab("Temperatura Medie (°C)") +
+  theme_light() + theme(aspect.ratio=1)
+                        
+ggplot(data, aes(x=Data, y=PrecMM)) + 
+  geom_point(col="tomato1", alpha=.5) + 
+  xlab("Data") +
+  ylab("Precipitatii (mm)") +
+  theme_light() + theme(aspect.ratio=1)
+
+```
+
+* Step 12: Rulam o regresie liniara (care "probabil" ne va arata ca exista un trend de incalzire globala)
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+options(scipen=999)
+
+reg <- lm(TMedieC ~ Data, data)
+
+summary(reg)
+
+reg$coefficients
+
+ggplot(data, aes(x=Data, y=TMedieC)) + 
+  geom_point(col="tomato1", alpha=.5) + 
+  xlab("Data") +
+  ylab("Temperatura Medie (°C)") +
+  theme_light() + theme(aspect.ratio=1) +
+  stat_smooth(method="lm", color="steelblue", alpha=.15)
+
+```
+
+* avem un p-value foarte mic, mult sub 0.05 (daca ar fi mai mare am rejecta ipoteza ca exista un trend)
+* din coeficienti rezulta ca Beta pentru Data e pozitiv, deci exista o crestere a temperaturii in functie de data
+
+
+* Step 13: Vizualizam la nivel de an in functie de luna
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+data$Luna <- month(data$Data)
+data$Luna <- as.factor(data$Luna)
+levels(data$Luna) <- c("Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Noi", "Dec")
+
+ggplot(data, aes(x=Luna, y=TMedieC)) + 
+  geom_jitter(col="tomato1", alpha=.1) +
+  theme_light() + theme(aspect.ratio=1) +
+  xlab("Luna") +
+  ylab("Temperatura Medie (°C)")
+
+```
+
+### Regresie
+
+* Step 14: Construim o regresie liniara in care adaugam ca predictori 
+
+anul
+
+luna din an ca factor, astfel incat regresia sa prinda relatia temporala (daca ar fi numeric, am forta o relatie crescatoare)
+
+precipitatiile
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+options(scipen=999)
+
+data$An <- year(data$Data)
+
+reg <- lm(TMedieC ~ An + Luna + PrecMM, data)
+
+summary(reg)
+
+reg$coefficients
+
+data$Predictie <- predict(reg)
+```
+
+Avem relatii semnificative pentru toate variabilele (conform coloanei  Pr(>|t|), care ne da nivelul de semnificatie pentru variabile). Deci toate variabilele, anul, luna si nivelul de precipitatii sunt buni predictori ai temperaturii medii
+
+
+* Step 15: Vizualizam rezultatele predictiei
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+ggplot(data, aes(x=Data, y=TMedieC)) + 
+  geom_point(col="gray", alpha=.1) + 
+  xlab("Data") +
+  ylab("Temperatura Medie (°C)") +
+  theme_light() + theme(aspect.ratio=1) +
+  geom_line(aes(Data, Predictie), color="steelblue")
+
+```
+
+* Step 16: Zoom-in doar pentru ultimii 3 ani
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
+threshold <- "2019-01-01"
+
+ggplot(data[data >= threshold,], aes(x=Data, y=TMedieC)) + 
+  geom_point(col="gray", alpha=.25) + 
+  xlab("Data") +
+  ylab("Temperatura Medie (°C)") +
+  theme_light() + theme(aspect.ratio=1) +
+  geom_line(aes(Data, Predictie), color="steelblue")
+```
+
+
+* Observam ca predictia depinde foarte mult de factorul luna(de aici graficul in trepte)
+
+
+* Step 17: Zoom-in pe 2021 si predictia pentru urmatoarele luni, in absenta precipitatiilor. 
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+library(dplyr)
+
+days <- seq(as.Date(max(data$Data)), as.Date('2021-12-31'), by="days")
+future <- tail(data, length(days))
+future$Data <- days
+future$An <- year(future$Data)
+future$Luna <- month(future$Data)
+future$Luna <- as.factor(future$Luna)
+levels(future$Luna) <- c("Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Noi", "Dec")
+future$PrecMM <- 0
+future$Predictie <- predict(reg, future)
+future$TMedieC <- future$Predictie
+
+newdata <- rbind(data[data$Data >= '2021-01-01',], future)
+
+
+ggplot(newdata, aes(x=Data, y=TMedieC)) + 
+  geom_point(col="gray", alpha=.1) + 
+  xlab("Data") +
+  ylab("Temperatura Medie (°C)") +
+  theme_light() + theme(aspect.ratio=1) +
+  geom_line(aes(Data, Predictie), color="steelblue")
+```
+
+Avem predictii in trepte datorita importantei acordate lunii si faptului ca am presupus zero precipitatii.
+
+Possible future work: introdusa o predictie de precipitatii in functie de perioada anului si folosite in acest model.
+
+
+### Analiza regresiei (optional) 
+
+* Step 18: Analiza de residuals. Adica ne uitam la diferentele dintre ce am prezis si ce s-a intamplat de fapt, si ar trebui sa avem o distributie a lor aproximativ normala. Daca nu, inseamna ca modelul nostru nu este un foarte bun predictor. Facem asta printr-un QQ plot, in care pe axa X avem theoretical quantiles pentru o distributie normala si pe axa Y diferenta intre predictie si realitate.
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+
+data$Residuals <- reg$residuals
+
+ggplot(data, aes(sample=Residuals)) +
+  stat_qq_line(colour="gray") + stat_qq(colour="tomato1", alpha=.3) + theme_light() +
+  xlab("Theoretical Quantiles") + ylab("Standardized Residuals") + 
+  theme_light() + theme(aspect.ratio=1) + 
+  theme(axis.title=element_text(face="bold"))
+  
+```
+
+
+Si avem niste residuals arata acceptabil. Nu arata "excelent", dar sunt aproape normali. Avem "heavy tails", adica atunci cand gresim, gresim cu mai mult decat ar fi daca random, in special la temperaturile negative. 
+
+
+* Step 19: residuals versus leverage. Un chart in care se calculeaza o metrica numita Cook's distance, care iti zice cu cat ar diferi dreapta de regresie daca s-ar face regresia stergand din dataset un anumit punct. Altfel zis: cu cat influenteaza o anumita zi din istorie predictiile noastre.
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+
+plot(reg, 5)
+  
+```
+
+
+Arata acceptabil chart-ul. Aici dreapta rosie ar trebui sa fie cat mai aproape de orizontal, si sa nu avem puncte negre in partea dreapta prea departe de 0. Suntem aproape acolo... nu chiar, dar arata ok. Adica nu avem niste zile care sa ne afecteze regresia asa de mult incat sa o schimbe semnificativ.
+
