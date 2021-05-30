@@ -1,3 +1,13 @@
+---
+title: "Daily Weather - analysis and predictions"
+author: "Bogdan Orbai & Luncan Alexandru"
+authors: 8794     8772
+output:
+  word_document: default
+mainfont: Times
+fonstsize: 12pt
+---
+
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 # bloc de cod R in Rmd
 # install.packages(c("reshape2","lubridate","weathermetrics","dplyr")
@@ -127,11 +137,7 @@ ggplot(data, aes(x=Luna, y=TMedieC)) +
 
 ### Regresie
 
-* Step 14: Construim o regresie liniara in care adaugam ca predictori 
-
-anul
-
-luna din an ca factor, astfel incat regresia sa prinda relatia temporala (daca ar fi numeric, am forta o relatie crescatoare)
+* Step 14: Construim o regresie liniara in care adaugam ca predictori anul si luna din an ca factor, astfel incat regresia sa prinda relatia temporala (daca ar fi numeric, am forta o relatie crescatoare)
 
 precipitatiile
 
@@ -219,7 +225,6 @@ Avem predictii in trepte datorita importantei acordate lunii si faptului ca am p
 
 Possible future work: introdusa o predictie de precipitatii in functie de perioada anului si folosite in acest model.
 
-
 ### Analiza regresiei (optional) 
 
 * Step 18: Analiza de residuals. Adica ne uitam la diferentele dintre ce am prezis si ce s-a intamplat de fapt, si ar trebui sa avem o distributie a lor aproximativ normala. Daca nu, inseamna ca modelul nostru nu este un foarte bun predictor. Facem asta printr-un QQ plot, in care pe axa X avem theoretical quantiles pentru o distributie normala si pe axa Y diferenta intre predictie si realitate.
@@ -251,4 +256,3 @@ plot(reg, 5)
 
 
 Arata acceptabil chart-ul. Aici dreapta rosie ar trebui sa fie cat mai aproape de orizontal, si sa nu avem puncte negre in partea dreapta prea departe de 0. Suntem aproape acolo... nu chiar, dar arata ok. Adica nu avem niste zile care sa ne afecteze regresia asa de mult incat sa o schimbe semnificativ.
-
