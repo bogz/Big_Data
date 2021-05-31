@@ -1,30 +1,98 @@
 ---
-title: "Daily Weather - analysis and predictions"
-author: "Bogdan Orbai & Luncan Alexandru"
-authors: 8794     8772
 output:
   word_document: default
-mainfont: Times
-fonstsize: 12pt
+  pdf_document: default
+  html_document: default
 ---
-
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 # bloc de cod R in Rmd
 # install.packages(c("reshape2","lubridate","weathermetrics","dplyr")
 ```
 
+<center>
+
+## RAPORT-BIG DATA 
+<br>
+<br>
+<br>
+
+# Monthly Weather - analysis and predictions
+
+<br>
+<br>
+<br>
+<br>
+</center>
+
+
+Proiect realizat de:
+
+Orbai Bogdan Sebastian Gr.4 nr.8794
+
+Luncan Alexandru - Ciprian Gr.4 nr.8772
+
+**Informatică Economică - ID**
+
+<br>
+<br>
+<br>
+<br>
+
+## INTRODUCERE
+Schimbările climatice afectează toate regiunile lumii. Calotele glaciare se topesc treptat, iar nivelul mărilor și oceanelor este într-o permanentă creștere. Unele regiuni se confruntă cu fenomene meteorologice extreme iar precipitațiile sunt din ce în ce mai frecvente, pe când în alte zone există doar valuri de căldură și secete extreme. Se așteaptă o intensificare a acestor fenomene în următoarele decenii.
+
+Datorită faptului că vremea este tot mai imprevizibilă pe zi ce trece, acest lucru fiind datorat în mare parte încălzirii globale, am decis să studiem evoluția meteorologică pe o perioadă de 41 de ani (1980 - 2021) cu scopul de a deprinde concluzii în legătură cu ceea ce urmează. Am ales această arie de studiu deoarece considerăm clima un aspect important ce trebuie monitorizat constant prin simplul fapt că ne influențează direct în viața de zi cu zi. 
+
+Nu doar noi avem de suferit datorită schimbărilor climatice, următoarele generații, economia, flora și fauna, toate aceste lucruri urmează să simtă efectele dăunătoare. Pentru o expunere mai clară a daunelor putem clasifica consecințele unui climat bolnav în câteva categorii:
+
+*	Riscuri pentru sănătatea umană 
+
+A crescut numărul deceselor cauzate de căldură în unele regiuni și a scăzut numărul celor cauzate de frig în altele. Asistăm deja la modificarea distribuției unor boli transmise prin apă sau vânt.
+
+* Costuri pentru societate și economie
+
+Daunele cauzate bunurilor imobile și infrastructurii, dar și sănătății umane antrenează costuri ridicate pentru societate și economie. Sectoarele care depind mult de temperatură și precipitații, cum ar fi agricultura, silvicultura, energia și turismul, sunt în mod special afectate.
+
+*	Riscuri pentru flora și fauna sălbatică
+
+Schimbările climatice se produc atât de rapid încât supraviețuirea multor specii de plante și animale este amenințată. Multe specii terestre, de apă dulce și marine au migrat deja. Unele specii de plante și animale riscă să dispară dacă temperaturile medii globale vor continua să crească necontrolat.
+
+Ceea ce își propune proiectul este să obțină, pe baza datelor strânse de-a lungul celor 41 de ani de către NOAA (National Oceanic and Atmospheric Administration), un răspuns la întrebarea: Cât de bine putem analiza clima din Cluj utilizând stația meteorologică cu ID-ul ROE00100902  pentru a putea prezice ceea ce urmează să se întâmple? Altfel spus vom încerca să determinăm cu acuratețe, existența unor fenomene extreme în zona Clujului cu scopul de a ne pregăti în așa fel încât să nu avem de suferit pe nici un plan.
+
+Acest tip de analiza ar fi utilă pentru toți cetățenii orașului și a zonelor periferice, deoarece nu ar fi surprinși de aceste fenomene și fiecare ar putea acționa în cunoștință de cauză. Totodată analiza poate să fie mai apoi preluată și utilizată și pentru alte orașe sau regiuni mai mari tot cu scopul de a putea ajuta lumea să se pregătească din timp pentru ceea ce urmează.
+
+## SETUL DE DATE
+
+Sursa setului de date pe care le-am folosit în cadrul acestui proiect este https://www.ncdc.noaa.gov/cdo-web/datasets. Am ales să folosim această sursă deoarece este una specializată în domeniul datelor referitoare la climă și vreme. Din punct de vedere al structurii, utilizăm următoarele date: stația ( noi am ales să o folosim pe cea din Cluj ce are id-ul ROE00100902 ), ziua ( pe care am transformat-o mai apoi în dată cu scopul de a o vizualiza mai bine ), variabila ( TAVG ), valoarea ( care se referă la gradele Celsius °C ), precipitațiile ( PrecMM ), temperatura maximă ( TMAX ), temperatura minimă ( TMIN ) și temperatura medie ( TAVG ). Considerăm că aceste date ne sunt suficiente pentru a putea înțelege schimbările climatice dar cât și să putem face o prezicere corectă utilizându-le.
+
+Analizând datele pe care le avem la dispoziție, putem trage niște concluzii din start, și anume faptul că temperatura medie urmează o rută asemănătoare în fiecare an acest lucru fiind în mare parte datorat celor patru anotimpuri. Schimbările de la un an la altul nu sunt foarte uriașe însă în urma rulării unei regresii liniare am descoperit un trend de încălzire globală treptată.
+
+## REZULTATE ȘI DISCUȚII
+
+Pentru o bună prezentare a pașilor pe care i-am făcut în cadrul acestei analize, vom începe cu prezentarea primului pas din cadrul primului capitol, și anume:
+
 ### Obtinerea datelor:
 
-* Step 1: https://www.ncdc.noaa.gov/cdo-web/datasets -> Daily Summaries -> FTP
-* Step 2: check ghcnd-stations.txt, search Cluj-Napoca, gasit ca ID-ul statiei meteo e ROE00100902
-* Step 3: cautat ROE00100902.tar.gz in https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ si downloadat
-* Step 4: expandat tgz-ul si rezulta datasetul ROE00100902.csv atasat
+* Pasul 1: Accesarea site-ului https://www.ncdc.noaa.gov/cdo-web/datasets pentru a face rost de datele necesare acestui studiu. După ce am accesat site-ul am intrat pe Daily Summaries unde sunt reprezentate din punct de vedere meteorologic, observațiile zilnice ale suprafeței terestre din întreaga lume. În cele din urmă am intrat pe adresa FTP din Daily Summaries pentru că am considerat că acest server ne este ideal pentru extracția de date.
+
+* Pasul 2: După ce am accesat serverul FTP am intrat pe fișierul denumit ghcnd-stations.txt pentru a prelua datele dorite. În cadrul acestui fișier am căutat numele stației de interes, deoarece vrem să studiem clima pe zona Clujului am căutat stația din Cluj și i-am preluat ID-ul ( ROE00100902 ). 
+
+<center>
+![](Imagini/picture1.png)
+
+</center>
+
+* Pasul 3: Mai apoi cautăm ID-ul stației în cadrul fișierului ghcnd_all.tar.gz iar după ce identificăm fișierul dorit îl vom downloada.
+
+* Pasul 4: În urma expandării archivei se va găsi documentul de interes, mai exact ROE00100902.csv pe care urmează să îl analizăm folosind platforma RStudio cu scopul de a putea răspunde întrebărilor științifice propuse.
 
 ### Construirea dataset-ului:
 
-* Step 5: ne uitam in https://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt ce avem in fisier si ce inseamna coloanele. De fapt am ajuns la alt link, in care era mai clar: https://docs.opendata.aws/noaa-ghcn-pds/readme.html
-* Step 6: ne uitam si in fisier sa vedem cum arata..
-* Step 7: scriem niste cod sa citim csv-ul
+* Pasul 5:	Primul pas în cadrul construirii dataset-ului îl reprezintă identificarea a ceea ce se regăsește în cadrul csv-ului respectiv ce reprezintă mai exact fiecare colană. Avem tot felul de abrevieri ce trebuie identificate pentru a fi utilizate corespunzător iar din acest motiv am ales să accesăm pagina https://docs.opendata.aws/noaa-ghcn-pds/readme.html unde ne sunt explicate toate elementele.
+
+* Pasul 6:	Verificăm setul de date pentru a ne asigura că suntem mulțumiți de el deoarece cuprinde toate datele necesare proceselor pe care urmează să le executăm.
+
+* Pasul 7: Ultimul pas din cadrul procesului de construire este chiar crearea codului necesar vizualizării fișierului CSV.  Mai jos se pot observa primele rezultate obținute:
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 
@@ -38,7 +106,7 @@ tail(input)
 
 ### Curatarea datelor:
 
-* Step 8: Avem o linie pentru o inregistrare. Facem un dcast care transforma din multe linii cu variabile diferite intr-un data frame cu mai multe coloane, una pentru fiecare variabila
+* Pasul 8: Deoarece avem o linie pe înregistrare, creăm un dcast care va transforma mai multe linii cu variabile diferite într-un data frame cu mai multe coloane, mai exact câte o coloană pentru fiecare variabilă.
 
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
@@ -49,9 +117,11 @@ tail(df)
 
 ```
 
-* Step 9: Convertim ziua sa fie de tip data si pastram coloanele cu precipitatia si temperatura medie si doar zilele in care exista amandoua
-* Step 10: Pastram doar datele incepand din 1980
-* Step 11: Convertim temperaturile in Celsius (in dataset sunt zecimi de grade celsius)
+* Pasul 9:	Pentru o expune și mai bine datele pe care dorim să le folosim mai departe urmează să le ordonăm și înfrumusețăm puțin. Vom schimba formatului zilei în așa fel încât să fie afișată ca o dată, și o să păstrăm doar coloanele cu o precipitație și o temperatură medie pentru zilele în care există amândouă.
+
+* Pasul 10:	Deoarece studiul pe care îl facem dorim să cuprindă doar perioada ultimilor 41 ani, o să păstrăm mai departe doar datele începând cu anul 1980.
+
+* Pasul 11:	Ultimul pas pentru curățare îl reprezintă convertirea temperaturilor în grade Celsius, deoarece în momentul de față valorile din TAVG sunt în formatul următor: (101; 143; 171; ...) iar noi ne dorim să facem aceste valori în format cu zecimală: (10,1; 14,3; 17,1; ...) deoarece acesta este formatul cel mai întâlnit pentru gradele Celsius în ziua de azi.
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(reshape2)
@@ -73,8 +143,9 @@ tail(data)
 
 ### Analiza Exploratorie
 
-* Step 11: Vizualizam temperatura medie si precipitatiile
+* Pasul 12:	Mai jos se pot vedea graficele pentru temperatura medie și pentru precipitațiile medii, rezultate în urma interpretării codului din RStudio.
 
+<center>
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
 
@@ -83,7 +154,14 @@ ggplot(data, aes(x=Data, y=TMedieC)) +
   xlab("Data") +
   ylab("Temperatura Medie (°C)") +
   theme_light() + theme(aspect.ratio=1)
-                        
+
+```
+
+*Graficul pentru temperatura medie*
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
 ggplot(data, aes(x=Data, y=PrecMM)) + 
   geom_point(col="tomato1", alpha=.5) + 
   xlab("Data") +
@@ -92,7 +170,11 @@ ggplot(data, aes(x=Data, y=PrecMM)) +
 
 ```
 
-* Step 12: Rulam o regresie liniara (care "probabil" ne va arata ca exista un trend de incalzire globala)
+*Graficul pentru precipitații*
+
+</center>
+
+* Pasul 13: În continuare urmează să rulăm o regresie liniară simplă pe care mai apoi să o putem interpreta în funcție de datele afișate. Este probabil să se observe o tendință de încălzire globală datorată efectului de seră creat de om. 
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -105,6 +187,37 @@ summary(reg)
 
 reg$coefficients
 
+```
+
+Mai sus se regăsește un rezumat al regresiei iar mai jos, explicațiile pentru valorile ei. Iar după acestea se poate observa și graficul regresiei liniare simple.
+
+## Explicații despre valori:
+
+*	Estimated Intercept reprezintă: valoarea la care dreapta de regresie intersectează axa Oy.
+
+* Estimated Data reprezintă: reprezintă cu câte grade crește temperatura  în medie de la o zi la alta (panta dreptei de regresie).
+
+*	Residuals (Min; 1Q; Median; 3Q; Max): reprezintă diferența dintre valorile înregistrate și valorile corespunzătoare  de pe dreapta de regresie.
+ 
+* Std. Error reprezintă: abaterea standard (standard deviation).
+
+*	t-value reprezintă: este rezultatul testului T.
+
+*	Pr(>|t| ) reprezintă: (probabilitatea) îți zice câtă încredere poți să ai în Intercept, respectiv în panta de regresie.
+
+*	Residual Standard Error: abaterea standard reziduală.
+
+*	R-squared: este o măsură a cât de bună e regresia (cu cât valoarea e mai mică, cu atât dreapta de regresie ar putea să nu explice bine datele).
+
+*	Multiple R-squared: este o măsura a cât de bine explică dreapta de regresie datele (ar fi 1 dacă toate valorile ar fi pe acea dreaptă)
+
+*	p-value reprezintă: nivelul de încredere la care respingem ipoteza nulă, adică probabilitatea ca observațiile noastre să fie explicate de dreapta de regresie din întâmplare.
+
+<center>
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
+library(ggplot2)
+
 ggplot(data, aes(x=Data, y=TMedieC)) + 
   geom_point(col="tomato1", alpha=.5) + 
   xlab("Data") +
@@ -114,11 +227,16 @@ ggplot(data, aes(x=Data, y=TMedieC)) +
 
 ```
 
-* avem un p-value foarte mic, mult sub 0.05 (daca ar fi mai mare am rejecta ipoteza ca exista un trend)
-* din coeficienti rezulta ca Beta pentru Data e pozitiv, deci exista o crestere a temperaturii in functie de data
+*Graficul regresiei liniare simple*
+
+</center>
+
+Se poate observa și faptul că avem un p-value foarte mic, mult sub 0,5 ( dacă ar fi mai mare am rejecta ipoteza deoarece ar exista un trend) iar din coeficienți rezultă că Beta pentru Data este pozitiv, deci există o creștere a temperaturii în funcție de dată.
 
 
-* Step 13: Vizualizam la nivel de an in functie de luna
+* Pasul 14: În următorul pas vizualizăm evoluția graficului la nivel de an în funcție de lună.
+
+<center> 
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -135,11 +253,19 @@ ggplot(data, aes(x=Luna, y=TMedieC)) +
 
 ```
 
+*Graficul evoluției la nivel de an în funcție de lună*
+
+</center>
+
 ### Regresie
 
-* Step 14: Construim o regresie liniara in care adaugam ca predictori anul si luna din an ca factor, astfel incat regresia sa prinda relatia temporala (daca ar fi numeric, am forta o relatie crescatoare)
+* Pasul 15:	În continuare, construim o regresie liniară în care adăugăm mai mulți predictori, printre aceștia se numără:
 
-precipitatiile
+*anul
+
+*luna din an
+
+*precipitațiile
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -157,10 +283,11 @@ reg$coefficients
 data$Predictie <- predict(reg)
 ```
 
-Avem relatii semnificative pentru toate variabilele (conform coloanei  Pr(>|t|), care ne da nivelul de semnificatie pentru variabile). Deci toate variabilele, anul, luna si nivelul de precipitatii sunt buni predictori ai temperaturii medii
+Se poate observa că avem relații semnificative pentru toate variabilele (conform coloanei Pr ( >|t|), care ne dă nivelul de semnificație pentru variabile). Prin urmare toate vriabilele: anul, luna și nivelul de precipitații sunt buni predictori pentru temperatura medie.
 
+* Pasul 16:	Vizualizăm graficul regresiei liniare cu mai mulți parametrii pe perioada anilor (1980-2021).
 
-* Step 15: Vizualizam rezultatele predictiei
+<center>
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -174,7 +301,13 @@ ggplot(data, aes(x=Data, y=TMedieC)) +
 
 ```
 
-* Step 16: Zoom-in doar pentru ultimii 3 ani
+*Graficul regresiei liniare cu mai mulți parametrii*
+
+</center>
+
+* Pasul 17: Facem un ZOOM-IN pe perioada ultimilor trei ani pentru o vizualizare mai detaliată a evoluției climatice.
+
+<center>
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -189,11 +322,15 @@ ggplot(data[data >= threshold,], aes(x=Data, y=TMedieC)) +
   geom_line(aes(Data, Predictie), color="steelblue")
 ```
 
+*Graficul regresiei liniare cu mai mulți parametrii (zoom-in pe ultimii 3 ani)*
 
-* Observam ca predictia depinde foarte mult de factorul luna(de aici graficul in trepte)
+</center>
 
+Se poate observa faptul că, graficul este puternic influențat de parametrul lună datorită celor 4 anotimpuri pe care noi le avem. Din acest motiv desenul regresiei apare sub forma unor trepte ce cresc sau descresc.
 
-* Step 17: Zoom-in pe 2021 si predictia pentru urmatoarele luni, in absenta precipitatiilor. 
+* Pasul 18:	Ultimul pas în cadrul analizei noastre îl reprezintă predicția. Am decis să scoatem parametrul ,,precipitație" pentru a face o predicție cât mai exactă, și să studiem doar anul 2021. Rezultatul predicției este expus mai jos. 
+
+<center>
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 library(ggplot2)
@@ -221,13 +358,19 @@ ggplot(newdata, aes(x=Data, y=TMedieC)) +
   geom_line(aes(Data, Predictie), color="steelblue")
 ```
 
-Avem predictii in trepte datorita importantei acordate lunii si faptului ca am presupus zero precipitatii.
+*Graficul predicției pe anul 2021*
 
-Possible future work: introdusa o predictie de precipitatii in functie de perioada anului si folosite in acest model.
+</center>
 
-### Analiza regresiei (optional) 
+## CONCLUZIE
 
-* Step 18: Analiza de residuals. Adica ne uitam la diferentele dintre ce am prezis si ce s-a intamplat de fapt, si ar trebui sa avem o distributie a lor aproximativ normala. Daca nu, inseamna ca modelul nostru nu este un foarte bun predictor. Facem asta printr-un QQ plot, in care pe axa X avem theoretical quantiles pentru o distributie normala si pe axa Y diferenta intre predictie si realitate.
+În concluzie, analizând vremea pe perioada celor 41 de ani am putut observa atât niște tipare ce se repetă de la an la an (variația temperaturii medii pe trepte datorată anotimpurilor) dar și anumite fenomene mai extreme (nivelul super ridicat de precipitații din 1989). Răspunsul pentru întrebarea din introducere ar fi următorul: Putem prezice cum urmează să arate vreme pentru lunile următoare din punct de vedere a temperaturii medii însă există încă mulți factori ce pot să fie luați în calcul pentru o analiză și mai exactă. Din punct de vedere realist nu considerăm că vremea o să poată să fie prezisă la perfecție niciodată (mai ales pe perioade lungi) deoarece există prea mulți factori din natură pe care nu-i putem sustrage și interpreta. Totuși considerăm că abilitățile noastre de a analiza grafice și de a face predicții se vor îmbunătăți treptat.
+
+### EXTRA
+
+Analiza  reziduală ne prezintă diferențele între ce am prezis și ce s-a întâmplat de fapt, ar trebuii să avem o distribuție a lor aproximativ normală. În caz contrar înseamnă că modelul nostru nu este un foarte bun predictor. Acest lucru se realizează printr-un QQ plot, în care pe axa X avem Theoretical Quantiles pentru o distribuție normală, și pe axa Y diferența dintre predicție și realitate.
+
+<center>
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 
@@ -241,12 +384,13 @@ ggplot(data, aes(sample=Residuals)) +
   
 ```
 
+</center>
 
-Si avem niste residuals arata acceptabil. Nu arata "excelent", dar sunt aproape normali. Avem "heavy tails", adica atunci cand gresim, gresim cu mai mult decat ar fi daca random, in special la temperaturile negative. 
+Se poate observa faptul că avem un rezidual care arată relativ bine. Nu este unul perfect dar arată aproape normal. 
 
+Residuals versus Leverage reprezintă un chart în care se calculează o metrică numită Cooks distance, aceasta ne prezintă cum s-ar schimba dreapta de regresie daca s-ar face după stergerea unui punct din dataset. Altfel spus: Cu cât ne influenzează o anumită zi din isotrie predicțiile noastre.
 
-* Step 19: residuals versus leverage. Un chart in care se calculeaza o metrica numita Cook's distance, care iti zice cu cat ar diferi dreapta de regresie daca s-ar face regresia stergand din dataset un anumit punct. Altfel zis: cu cat influenteaza o anumita zi din istorie predictiile noastre.
-
+<center>
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE,out.width="75%"}
 
@@ -254,5 +398,7 @@ plot(reg, 5)
   
 ```
 
+</center>
 
-Arata acceptabil chart-ul. Aici dreapta rosie ar trebui sa fie cat mai aproape de orizontal, si sa nu avem puncte negre in partea dreapta prea departe de 0. Suntem aproape acolo... nu chiar, dar arata ok. Adica nu avem niste zile care sa ne afecteze regresia asa de mult incat sa o schimbe semnificativ.
+Conform rezultatelor nu avem zile care să ne afecteze regresia așa de mult încât să o schimbe semnificativ. Dreapta roșie este destul de apropiată de centru (ceea ce este bine ), și nu avem multe puncte în partea dreaptă, prea departe de 0 (ceea ce este bine).
+
